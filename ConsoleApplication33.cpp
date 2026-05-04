@@ -1,175 +1,180 @@
-// ConsoleApplication2.cpp: ���������� ����� ����� ��� ����������� ����������.
-//
-
-
-#include "stdafx.h"
 #include <iostream>
-#define _USE_MATH_DEFINES
+#include <cstring>
 using namespace std;
-#include <cmath>
-#include <time.h>
-/*
-int main()
-{
-	double s = 0.0;
-	for (int n = 1; n <= 25; n++)
-	{
-		double one = pow(-1.0,n) * ((n*n + 1.0)/n);
-		s+= one;
-	}
-	printf("%lf\n", s);
-	system("pause");
-	return 0;
-}
-*/
-/*
-int main()
-{
-  double maxx = 0.0;
-  int n = 0;
-  for (int i = 1; i <= 25; i++)
-  {
-    double u = 5.0 * cos(sqrt(2.0*i));
-    if (u > maxx){
-      maxx = u;
-      n = i;
+
+const int SIZE = 20;
+const int MAX_TRACKS = 10;
+
+
+enum Genre {
+    ROCK,
+    INDIE_ROCK,
+    HIP_HOP,
+    POP
+};
+
+
+struct track {
+    char title[30];
+    int duration;
+};
+
+struct album {
+    char name[30];
+    char artist[30];
+    Genre genre;
+    int year;
+    int duration;
+    double price;
+    int track_count;
+    track songs[MAX_TRACKS];
+};
+
+const char* genreToStr(Genre g) {
+    switch (g) {
+        case ROCK: return "Рок";
+        case INDIE_ROCK: return "Инди-рок";
+        case HIP_HOP: return "Хип-хоп";
+        case POP: return "Поп";
     }
-  }
-  printf("%.7lf\n", maxx);
-  printf("%i\n", n);
-  system("pause");
-  return 0;
+    return "";
 }
-*/
 
-/*
-#include <iostream>
-#include <cmath>
-#include <time.h>
-using namespace std;
+album* init() {
+    album* a = new album[SIZE];
 
-void main()
-{
-    setlocale(LC_ALL, "Ru");
+    a[0] = { "HybridTheory", "LinkinPark", ROCK, 2000, 37, 15.0, 3,
+        { {"Papercut",3}, {"InTheEnd",4}, {"Crawling",3} } };
 
-    double s, a, x, z;
-    int i;
+    a[1] = { "Nevermind", "Nirvana", ROCK, 1991, 42, 20.0, 3,
+        { {"SmellsLikeTeenSpirit",5}, {"ComeAsYouAre",3}, {"Lithium",4} } };
 
-    printf("Введите x=");
-    scanf_s("%lf", &x);
+    a[2] = { "AM", "ArcticMonkeys", INDIE_ROCK, 2013, 41, 18.0, 3,
+        { {"DoIWannaKnow",4}, {"RUMine",3}, {"Arabella",3} } };
 
-    clock_t start, end;
+    a[3] = { "DAMN", "KendrickLamar", HIP_HOP, 2017, 39, 22.0, 3,
+        { {"HUMBLE",3}, {"DNA",3}, {"LOYALTY",3} } };
 
-    s = 0;
-    i = 0;
+    a[4] = { "TheWall", "PinkFloyd", ROCK, 1979, 81, 25.0, 3,
+        { {"AnotherBrick",3}, {"ComfortablyNumb",6}, {"HeyYou",4} } };
 
-    start = clock();
+    a[5] = { "Currents", "TameImpala", INDIE_ROCK, 2015, 51, 23.0, 3,
+        { {"TheLessIKnow",3}, {"LetItHappen",7}, {"Eventually",5} } };
 
-    printf("i\ta\t\t\t\ts\n");
+    a[6] = { "Graduation", "KanyeWest", HIP_HOP, 2007, 51, 21.0, 3,
+        { {"Stronger",5}, {"FlashingLights",4}, {"Homecoming",3} } };
 
-    a = pow(x, 2 * i) / 1.0;
+    a[7] = { "AbbeyRoad", "TheBeatles", ROCK, 1969, 47, 30.0, 3,
+        { {"ComeTogether",4}, {"Something",3}, {"HereComesTheSun",3} } };
 
-    while (abs(a) > 1e-20)
-    {
-        s += a;
+    a[8] = { "FineLine", "HarryStyles", POP, 2019, 46, 19.0, 3,
+        { {"AdoreYou",3}, {"WatermelonSugar",3}, {"Falling",4} } };
 
-        printf("%d\t%.20f\t%.20f\n", i, a, s);
+    a[9] = { "TestAlbum", "TestArtist", ROCK, 2020, 40, 10.0, 2,
+        { {"Song1",3}, {"Song2",4} } };
 
-        i++;
+    for (int i = 10; i < SIZE; i++) {
+        a[i] = { "Default", "Artist", ROCK, 2000+i, 40, 10.0, 2,
+            { {"Song1",3}, {"Song2",4} } };
+    }
 
-        
-        f = 1;
-        for (int j = 2; j <= 2 * i; j++)
-        {
-            f *= j;
+    return a;
+}
+
+void printAlbum(album a) {
+    cout << "Название: " << a.name << endl;
+    cout << "Исполнитель: " << a.artist << endl;
+    cout << "Жанр: " << genreToStr(a.genre) << endl;
+    cout << "Год: " << a.year << endl;
+    cout << "Количество треков: " << a.track_count << endl;
+    cout << "----------------------\n";
+}
+
+void printArray(album a[], int n) {
+    for (int i = 0; i < n; i++) {
+        printAlbum(a[i]);
+    }
+}
+
+// фильтр
+int filter(album src[], album dst[]) {
+    int k = 0;
+    for (int i = 0; i < SIZE; i++) {
+        if (src[i].genre == ROCK || src[i].genre == INDIE_ROCK) {
+            dst[k++] = src[i];
         }
+    }
+    return k;
+}
 
-        a = pow(x, 2 * i) / f;
+// сортировка пузырьком
+void bubbleSort(album a[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (strcmp(a[j].artist, a[j + 1].artist) > 0) {
+                swap(a[j], a[j + 1]);
+            }
+        }
+    }
+}
+
+// топ 5
+void top5(album a[]) {
+    for (int i = 0; i < SIZE - 1; i++) {
+        for (int j = 0; j < SIZE - i - 1; j++) {
+            if (a[j].price < a[j + 1].price) {
+                swap(a[j], a[j + 1]);
+            }
+        }
     }
 
-    end = clock();
-
-    z = ((double)end - start) / CLOCKS_PER_SEC;
-
-    printf("Sum = %.4f\nTime = %.5f s", s, z);
-
-    system("pause");
-}
-*/
-/*
-#include <iostream>
-#include <cmath>
-#include <time.h>
-using namespace std;
-
-void main()
-{
-    setlocale(LC_ALL, "Ru");
-
-    double s, a, x, z;
-    int i;
-
-    printf("Введите x=");
-    scanf_s("%lf", &x);
-
-    clock_t start, end;
-
-    s = 0;
-    i = 0;
-    a = 1; // a0 = x^0 / 0! = 1
-
-    start = clock();
-
-    printf("i\ta\t\t\t\ts\n");
-
-    while (fabs(a) > 1e-20)
-    {
-        s += a;
-
-        printf("%d\t%.20f\t%.20f\n", i, a, s);
-
-        i++;
-
-        // рекуррентная формула
-        a = a * (x * x) / ((2 * i) * (2 * i - 1));
+    cout << "\nТоп 5 самых популярных альбомов:\n";
+    for (int i = 0; i < 5; i++) {
+        printAlbum(a[i]);
     }
-
-    end = clock();
-
-    z = ((double)end - start) / CLOCKS_PER_SEC;
-
-    printf("Sum = %.4f\nTime = %.5f s", s, z);
-
-    system("pause");
 }
-*/
 
+// 7 треков
+int moreThan7(album src[], album dst[]) {
+    int k = 0;
+    for (int i = 0; i < SIZE; i++) {
+        if (src[i].track_count > 7) {
+            dst[k++] = src[i];
+        }
+    }
+    return k;
+}
 
-/*
+// редактирование
+void editAlbum(album &a) {
+    strcpy(a.name, "Отредактировано");
+    strcpy(a.artist, "НовыйИсполнитель");
+}
 
-int main()
-{
-    double A_prev = 1; // A0
-    double A_curr = 1; // A1
-    double A_next;
+int main() {
+    album* albums = init();
+    album filtered[SIZE];
+    album many[SIZE];
 
-    int n = 1;
+    int fCount = filter(albums, filtered);
+    bubbleSort(filtered, fCount);
 
-    do
-    {
-        n++;
+    cout << "\nОтфильтрованные альбомы (рок и инди-рок):\n";
+    printArray(filtered, fCount);
 
-        A_next = pow(M_E, -(n - 1)) * A_curr + pow(M_E, (n - 1)) * A_prev;
+    int mCount = moreThan7(albums, many);
 
-        A_prev = A_curr;
-        A_curr = A_next;
-        cout << "A_n = " << A_curr << endl;
+    cout << "\nАльбомы с более чем 7 треками:\n";
+    printArray(many, mCount);
 
-    } while (A_curr <= 10000);
+    cout << "\nТоп 5 самых популярных альбомов:\n";
+    top5(albums);
 
-    cout << "Минимальный n = " << n << endl;
-    system("pause");
+    editAlbum(albums[0]);
+
+    cout << "\nОтредактированный альбом:\n";
+    printAlbum(albums[0]);
+
+    delete[] albums;
     return 0;
 }
-*/
-
